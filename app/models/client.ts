@@ -4,10 +4,10 @@ import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 
 export default class Client extends BaseModel {
   @column({ isPrimary: true })
-  public id: number | null = null
+  declare public id: number
 
-  @column()
-  public userId: number | null = null
+  // @column()
+  // public userId: number | null = null
 
   @column()
   public name: string = ''

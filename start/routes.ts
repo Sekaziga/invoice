@@ -10,5 +10,6 @@
 import router from '@adonisjs/core/services/router'
 
 router.on('/').render('pages/home')
-router.get('/clients', 'clients_controller.index')
-router.post('/clients', 'clients_controller.store')
+
+router.get('/clients', '#controllers/clients_controller.index')
+router.post('/clients', '#controllers/clients_controller.store')

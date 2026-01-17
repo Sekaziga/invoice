@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Clients</title>
+  </head>
+  <body>
+   <h1>Clients</h1>
+
+<h2>Add client</h2>
+<form method="POST" action="/clients">
+  @csrf
+
+  <input type="text" name="name" placeholder="Name" required />
+  <br />
+
+  <input type="email" name="email" placeholder="Email" />
+  <br />
+
+  <input type="text" name="phone" placeholder="Phone" />
+  <br />
+
+  <button type="submit">Create client</button>
+</form>
+
+
+<hr />
+
+@if(clients.length === 0)
+  <p>No clients yet</p>
+@else
+  <ul>
+    @each(client in clients)
+      <li>{{ client.name }} — {{ client.email }}</li>
+    @endeach
+  </ul>
+@endif
+
+  </body>
+</html>
