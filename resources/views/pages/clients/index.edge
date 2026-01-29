@@ -1,39 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Clients</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Clients
+    </title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
+        background-color: #f7f7f7;
+        color: #333;
+      }
+      
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+      }
+      
+      h2 {
+        margin-top: 30px;
+        color: #34495e;
+      }
+      
+      form {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+      }
+      
+      input[type="text"],
+      input[type="email"] {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+      
+      button {
+        padding: 10px 20px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      
+      button:hover {
+        background-color: #2980b9;
+      }
+      
+      ul {
+        background: #fff;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        list-style-type: none;
+      }
+      
+      ul li {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+      
+      ul li:last-child {
+        border-bottom: none;
+      }
+      
+      p {
+        background: #fff;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      }
+    </style>
   </head>
   <body>
-   <h1>Clients</h1>
+    <h1>
+      Clients
+    </h1>
 
-<h2>Add client</h2>
-<form method="POST" action="/clients">
-  @csrf
+    <h2>
+      Add Client
+    </h2>
+    <form method="POST" action="/clients">
+      @csrf
+      
+      <input type="text" name="name" placeholder="Name" required />
+      <input type="email" name="email" placeholder="Email" />
+      <input type="text" name="phone" placeholder="Phone" />
 
-  <input type="text" name="name" placeholder="Name" required />
-  <br />
+      <button type="submit">Create Client</button>
+    </form>
 
-  <input type="email" name="email" placeholder="Email" />
-  <br />
+    <hr />
 
-  <input type="text" name="phone" placeholder="Phone" />
-  <br />
-
-  <button type="submit">Create client</button>
-</form>
-
-
-<hr />
-
-@if(clients.length === 0)
-  <p>No clients yet</p>
-@else
-  <ul>
-    @each(client in clients)
-      <li>{{ client.name }} — {{ client.email }}</li>
-    @endeach
-  </ul>
-@endif
-
+    @if(clients.length === 0)
+      <p>
+        No clients yet
+      </p>
+    @else
+      <h2>
+        Client List
+      </h2>
+      <ul>
+        @each(client in clients)
+          <li>
+            {{ client.name }} — {{ client.email }}
+          </li>
+        @endeach
+      </ul>
+    @endif
   </body>
 </html>
