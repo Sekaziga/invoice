@@ -1,5 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import Invoice from '#models/invoice'
+//import Invoice from '#models/invoice'
 import Client from '#models/client'
 
 export default class InvoicesController {

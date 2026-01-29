@@ -7,8 +7,9 @@
 |
 */
 
+import ClientsController from '#controllers/ClientsController'
 import router from '@adonisjs/core/services/router'
-import { only } from 'node:test'
+//import { only } from 'node:test'
 
 router.on('/').render('pages/home')
 
@@ -18,8 +19,8 @@ router.on('/').render('pages/home')
 // router.post('/clients/:id/invoices', '#controllers/invoices_controller.store')
 // router.get('/clients/:id', '#controllers/clients_controller.show')
 // router.get('/clients/:id/edit', '#controllers/clients_controller.edit')
-router.post('/clients/:id', '#controllers/clients_controller.update')
+// router.post('/clients/:id', '#controllers/clients_controller.update')
 // router.delete('/clients/:id', '#controllers/clients_controller.destroy')
-// // keep compatibility route for forms/posts that target /clients/:id/delete
-// router.post('/clients/:id/delete', '#controllers/clients_controller.destroy')
-router.resource('clients', '#controllers/clients_controller')
+// keep compatibility route for forms/posts that target /clients/:id/delete
+//router.post('/clients/:id/delete', '#controllers/clients_controller.destroy')
+router.resource('clients', ClientsController)

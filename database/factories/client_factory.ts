@@ -3,6 +3,11 @@ import Client from '#models/client'
 
 export const ClientFactory = factory
   .define(Client, async ({ faker }) => {
-    return {}
+    return {
+      name: faker.name.fullName(),
+      email: faker.internet.email(),
+      phone: faker.phone.number(),
+      address: faker.address.streetAddress(),
+    }
   })
   .build()
