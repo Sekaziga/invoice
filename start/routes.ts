@@ -7,7 +7,6 @@
 |
 */
 
-import ClientsController from '#controllers/ClientsController'
 import router from '@adonisjs/core/services/router'
 //import { only } from 'node:test'
 
@@ -23,4 +22,4 @@ router.on('/').render('pages/home')
 // router.delete('/clients/:id', '#controllers/clients_controller.destroy')
 // keep compatibility route for forms/posts that target /clients/:id/delete
 //router.post('/clients/:id/delete', '#controllers/clients_controller.destroy')
-router.resource('clients', ClientsController)
+router.resource('clients', '#controllers/clients_controller')
