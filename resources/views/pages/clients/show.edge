@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Client Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+
+      h1 {
+        color: white;
+        font-size: 2.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn {
+        padding: 12px 24px;
+        background: white;
+        color: #667eea;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-danger {
+        background: #ef4444;
+        color: white;
+      }
+
+      .btn-secondary {
+        background: #6b7280;
+        color: white;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        margin-bottom: 30px;
+      }
+
+      h2 {
+        color: #333;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #667eea;
+      }
+
+      .client-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .detail-item {
+        margin-bottom: 15px;
+      }
+
+      .detail-label {
+        font-weight: bold;
+        color: #555;
+      }
+
+      .detail-value {
+        color: #333;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        font-weight: 500;
+      }
+
+      .status-paid {
+        background-color: #d1fae5;
+        color: #065f46;
+      }
+
+      .status-pending {
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+
+      .status-overdue {
+        background-color: #fee2e2;
+        color: #991b1b;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Client: {{ client.name }}</h1>
+        <a href="/clients" class="btn">Back to Clients</a>
+      </div>
+
+      <div class="card">
+        <h2>Client Information</h2>
+        <div class="client-details">
+          <div class="detail-item">
+            <div class="detail-label">Name:</div>
+            <div class="detail-value">{{ client.name }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Email:</div>
+            <div class="detail-value">{{ client.email }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Phone:</div>
+            <div class="detail-value">{{ client.phone || 'N/A' }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Address:</div>
+            <div class="detail-value">{{ client.address || 'N/A' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Invoices</h2>
+        @if(client.invoices.length > 0)
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @each(invoice in client.invoices)
+                <tr>
+                  <td>{{ invoice.id }}</td>
+                  <td>${{ invoice.amount }}</td>
+                  <td>{{ invoice.dueDate.toFormat('yyyy-MM-dd') }}</td>
+                  <td>
+                    <span class="status status-{{ invoice.status.toLowerCase() }}">
+                      {{ invoice.status }}
+                    </span>
+                  </td>
+                </tr>
+              @end
+            </tbody>
+          </table>
+        @else
+          <p>No invoices found for this client.</p>
+        @endif
+      </div>
+    </div>
+  </body>
+</html>
