@@ -23,3 +23,4 @@ router.on('/').render('pages/home')
 // keep compatibility route for forms/posts that target /clients/:id/delete
 //router.post('/clients/:id/delete', '#controllers/clients_controller.destroy')
 router.resource('clients', '#controllers/clients_controller')
+router.resource('clients.invoices', '#controllers/invoices_controller')

@@ -1,0 +1,41 @@
+<h1>Invoices for {{ client.name }}</h1>
+
+<a href="/clients/{{ client.id }}">← Back to client</a>
+
+<table>
+  <thead>
+    <tr>
+      <th>Amount</th>
+      <th>Due date</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    @each(invoice in invoices)
+      <tr>
+        <td>${{ invoice.amount }}</td>
+        <td>{{ invoice.dueDate.toFormat('yyyy-MM-dd') }}</td>
+        <td>{{ invoice.status }}</td>
+      </tr>
+    @endeach
+  </tbody>
+</table>
+
+<hr>
+
+<h3>Add invoice</h3>
+
+<form method="POST" action="/clients/{{ client.id }}/invoices">
+    {{ csrfField() }}
+
+  <input type="number" step="0.01" name="amount" placeholder="Amount" required />
+
+  <input type="date" name="due_date" required />
+
+  <select name="status">
+    <option value="pending">Pending</option>
+    <option value="paid">Paid</option>
+  </select>
+
+  <button type="submit">Create invoice</button>
+</form>
