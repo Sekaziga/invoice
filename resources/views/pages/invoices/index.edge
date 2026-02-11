@@ -1,41 +1,357 @@
-<h1>Invoices for {{ client.name }}</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoices for {{ client.name }}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-<a href="/clients/{{ client.id }}">← Back to client</a>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      color: #1f2937;
+      background: #f9fafb;
+      padding: 2rem 1rem;
+    }
 
-<table>
-  <thead>
-    <tr>
-      <th>Amount</th>
-      <th>Due date</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    @each(invoice in invoices)
-      <tr>
-        <td>${{ invoice.amount }}</td>
-        <td>{{ invoice.dueDate.toFormat('yyyy-MM-dd') }}</td>
-        <td>{{ invoice.status }}</td>
-      </tr>
-    @endeach
-  </tbody>
-</table>
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 2rem;
+    }
 
-<hr>
+    /* Header Section */
+    .header {
+      margin-bottom: 2rem;
+    }
 
-<h3>Add invoice</h3>
+    h1 {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 1rem;
+    }
 
-<form method="POST" action="/clients/{{ client.id }}/invoices">
-    {{ csrfField() }}
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #4f46e5;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
 
-  <input type="number" step="0.01" name="amount" placeholder="Amount" required />
+    .back-link:hover {
+      color: #4338ca;
+    }
 
-  <input type="date" name="due_date" required />
+    .back-link:focus {
+      outline: 2px solid #4f46e5;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
 
-  <select name="status">
-    <option value="pending">Pending</option>
-    <option value="paid">Paid</option>
-  </select>
+    /* Table Styles */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 3rem;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
 
-  <button type="submit">Create invoice</button>
-</form>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #f3f4f6;
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    tbody tr {
+      transition: background-color 0.2s;
+    }
+
+    tbody tr:hover {
+      background: #f9fafb;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Status Badge */
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .status-pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-paid {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-overdue {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* Form Section */
+    .form-section {
+      background: #f9fafb;
+      padding: 2rem;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: #111827;
+    }
+
+    form {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-weight: 500;
+      font-size: 0.875rem;
+      color: #374151;
+    }
+
+    input,
+    select {
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: all 0.2s;
+      background: white;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    input:hover,
+    select:hover {
+      border-color: #9ca3af;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    button:hover {
+      background: #4338ca;
+    }
+
+    button:focus {
+      outline: 2px solid #4f46e5;
+      outline-offset: 2px;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #6b7280;
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Responsive */
+    @media (min-width: 768px) {
+      form {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .form-group:last-child {
+        grid-column: 1 / -1;
+      }
+
+      button {
+        justify-self: start;
+      }
+    }
+
+    /* Screen reader only */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Invoices for {{ client.name }}</h1>
+      <a href="/clients/{{ client.id }}" class="back-link" aria-label="Back to {{ client.name }}'s profile">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to client
+      </a>
+    </header>
+
+    <div class="table-container">
+      @if(invoices.length > 0)
+        <table role="table" aria-label="Invoice list">
+          <thead>
+            <tr>
+              <th scope="col">Amount</th>
+              <th scope="col">Due Date</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @each(invoice in invoices)
+              <tr>
+                <td data-label="Amount">
+                  <strong>${{ invoice.amount }}</strong>
+                </td>
+                <td data-label="Due date">
+                  <time datetime="{{ invoice.dueDate.toISO() }}">
+                    {{ invoice.dueDate.toFormat('MMM dd, yyyy') }}
+                  </time>
+                </td>
+                <td data-label="Status">
+                  <span class="status-badge status-{{ invoice.status }}" role="status">
+                    {{ invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1) }}
+                  </span>
+                </td>
+              </tr>
+            @endeach
+          </tbody>
+        </table>
+      @else
+        <div class="empty-state" role="status">
+          <div class="empty-state-icon" aria-hidden="true">📄</div>
+          <p>No invoices yet. Create your first invoice below.</p>
+        </div>
+      @endif
+    </div>
+
+    <section class="form-section" aria-labelledby="add-invoice-heading">
+      <h3 id="add-invoice-heading">Add New Invoice</h3>
+
+      <form method="POST" action="/clients/{{ client.id }}/invoices" aria-label="Create invoice form">
+        {{ csrfField() }}
+
+        <div class="form-group">
+          <label for="amount">
+            Amount <span aria-label="required">*</span>
+          </label>
+          <input 
+            type="number" 
+            step="0.01" 
+            name="amount" 
+            id="amount"
+            placeholder="0.00" 
+            required 
+            aria-required="true"
+            min="0"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="due_date">
+            Due Date <span aria-label="required">*</span>
+          </label>
+          <input 
+            type="date" 
+            name="due_date" 
+            id="due_date"
+            required 
+            aria-required="true"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="status">
+            Status <span aria-label="required">*</span>
+          </label>
+          <select name="status" id="status" aria-required="true">
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <button type="submit">
+            Create Invoice
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</body>
+</html>

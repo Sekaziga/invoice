@@ -1,8 +1,9 @@
-import type { HttpContextContract as HttpContext } from '@ioc:Adonis/Core/HttpContext'
-import Client from '#models/client'
+import type { HttpContext } from '@adonisjs/core/http'
 import Invoice from '#models/invoice'
+import Client from '#models/client'
 
 export default class InvoicesController {
+  // GET /clients/:client_id/invoices
   public async index({ params, view }: HttpContext) {
     const client = await Client.findOrFail(params.client_id)
     await client.load('invoices')
@@ -13,35 +14,49 @@ export default class InvoicesController {
     })
   }
 
+  // GET /clients/:client_id/invoices/create
+  public async create({ params, view }: HttpContext) {
+    const client = await Client.findOrFail(params.client_id)
+    return view.render('pages/invoices/create', { client })
+  }
+
+  // POST /clients/:client_id/invoices
   public async store({ params, request, response }: HttpContext) {
     const client = await Client.findOrFail(params.client_id)
 
-    const data = request.only(['amount', 'due_date', 'status'])
+    const data = request.only(['amount', 'dueDate', 'status'])
 
     await client.related('invoices').create(data)
 
     return response.redirect(`/clients/${client.id}/invoices`)
   }
 
+  // GET /clients/:client_id/invoices/:id
+  public async show({ params, view }: HttpContext) {
+    const invoice = await Invoice.findOrFail(params.id)
+    return view.render('pages/invoices/show', { invoice })
+  }
+
+  // GET /clients/:client_id/invoices/:id/edit
   public async edit({ params, view }: HttpContext) {
     const invoice = await Invoice.findOrFail(params.id)
-    await invoice.load('client')
-
     return view.render('pages/invoices/edit', { invoice })
   }
 
+  // PUT /clients/:client_id/invoices/:id
   public async update({ params, request, response }: HttpContext) {
     const invoice = await Invoice.findOrFail(params.id)
 
-    invoice.merge(request.only(['amount', 'due_date', 'status']))
+    invoice.merge(request.only(['amount', 'dueDate', 'status']))
     await invoice.save()
 
-    return response.redirect(`/clients/${invoice.client_id}/invoices`)
+    return response.redirect(`/clients/${invoice.clientId}/invoices`)
   }
 
+  // DELETE /clients/:client_id/invoices/:id
   public async destroy({ params, response }: HttpContext) {
     const invoice = await Invoice.findOrFail(params.id)
-    const clientId = invoice.client_id
+    const clientId = invoice.clientId
 
     await invoice.delete()
 
