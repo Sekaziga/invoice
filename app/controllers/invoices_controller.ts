@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Invoice from '#models/invoice'
 import Client from '#models/client'
+import { DateTime } from 'luxon'
 
 export default class InvoicesController {
   // GET /clients/:client_id/invoices
@@ -26,7 +27,11 @@ export default class InvoicesController {
 
     const data = request.only(['amount', 'dueDate', 'status'])
 
-    await client.related('invoices').create(data)
+    await client.related('invoices').create({
+      amount: data.amount,
+      status: data.status,
+      dueDate: DateTime.fromISO(data.dueDate), // ✅ FIX HERE
+    })
 
     return response.redirect(`/clients/${client.id}/invoices`)
   }
