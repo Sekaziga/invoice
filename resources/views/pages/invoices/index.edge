@@ -265,32 +265,51 @@
     <div class="table-container">
       @if(invoices.length > 0)
         <table role="table" aria-label="Invoice list">
-          <thead>
-            <tr>
-              <th scope="col">Amount</th>
-              <th scope="col">Due Date</th>
-              <th scope="col">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            @each(invoice in invoices)
-              <tr>
-                <td data-label="Amount">
-                  <strong>${{ invoice.amount }}</strong>
-                </td>
-                <td data-label="Due date">
-                  <time datetime="{{ invoice.dueDate.toISO() }}">
-                    {{ invoice.dueDate.toFormat('MMM dd, yyyy') }}
-                  </time>
-                </td>
-                <td data-label="Status">
-                  <span class="status-badge status-{{ invoice.status }}" role="status">
-                    {{ invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1) }}
-                  </span>
-                </td>
-              </tr>
-            @endeach
-          </tbody>
+          <thead><thead>
+  <tr>
+    <th scope="col">Amount</th>
+    <th scope="col">Due Date</th>
+    <th scope="col">Status</th>
+    <th scope="col">Actions</th>
+  </tr>
+</thead>
+
+<tbody>
+  @each(invoice in invoices)
+    <tr>
+      <td>
+        <strong>${{ invoice.amount }}</strong>
+      </td>
+
+      <td>
+        @if(invoice.dueDate)
+          <time datetime="{{ invoice.dueDate.toISO() }}">
+            {{ invoice.dueDate.toFormat('MMM dd, yyyy') }}
+          </time>
+        @else
+          —
+        @endif
+      </td>
+
+      <td>
+        <span class="status-badge status-{{ invoice.status }}">
+          {{ invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1) }}
+        </span>
+      </td>
+
+      <td>
+        <form method="POST" action="/clients/{{ client.id }}/invoices/{{ invoice.id }}?_method=DELETE">
+  {{ csrfField() }}
+  <button type="submit">Delete</button>
+</form>
+       
+      </td>
+
+    </tr>
+  @endeach
+</tbody>
+
+
         </table>
       @else
         <div class="empty-state" role="status">
@@ -301,8 +320,13 @@
     </div>
 
     <section class="form-section" aria-labelledby="add-invoice-heading">
-      <h3 id="add-invoice-heading">Add New Invoice</h3>
+     <h3 id="add-invoice-heading">Add New Invoice</h3>
 
+@if(flashMessages.has('error'))
+  <div style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-weight: 500;">
+    ⚠️ {{ flashMessages.get('error') }}
+  </div>
+@end
       <form method="POST" action="/clients/{{ client.id }}/invoices" aria-label="Create invoice form">
         {{ csrfField() }}
 
@@ -328,7 +352,7 @@
           </label>
           <input 
             type="date" 
-            name="due_date" 
+            name="dueDate" 
             id="due_date"
             required 
             aria-required="true"
@@ -349,6 +373,8 @@
           <button type="submit">
             Create Invoice
           </button>
+         
+
         </div>
       </form>
     </section>
