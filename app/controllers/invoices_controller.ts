@@ -22,20 +22,37 @@ export default class InvoicesController {
   }
 
   // POST /clients/:client_id/invoices
-  public async store({ params, request, response }: HttpContext) {
+  public async store({ params, request, response, session }: HttpContext) {
     const client = await Client.findOrFail(params.client_id)
 
     const data = request.only(['amount', 'dueDate', 'status'])
 
+    // ✅ Validation
+    const amount = Number.parseFloat(data.amount)
+
+    if (Number.isNaN(amount)) {
+      session.flash('error', 'Amount must be a valid number')
+      return response.redirect().back()
+    }
+
+    if (amount <= 0) {
+      session.flash('error', 'Amount must be greater than 0')
+      return response.redirect().back()
+    }
+
+    if (amount > 9999999999.99) {
+      session.flash('error', 'Amount is too large. Maximum allowed is 9,999,999,999.99')
+      return response.redirect().back()
+    }
+
     await client.related('invoices').create({
-      amount: data.amount,
+      amount: amount,
       status: data.status,
-      dueDate: DateTime.fromISO(data.dueDate), // ✅ FIX HERE
+      dueDate: DateTime.fromISO(data.dueDate),
     })
 
     return response.redirect(`/clients/${client.id}/invoices`)
   }
-
   // GET /clients/:client_id/invoices/:id
   public async show({ params, view }: HttpContext) {
     const invoice = await Invoice.findOrFail(params.id)

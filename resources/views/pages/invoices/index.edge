@@ -320,8 +320,13 @@
     </div>
 
     <section class="form-section" aria-labelledby="add-invoice-heading">
-      <h3 id="add-invoice-heading">Add New Invoice</h3>
+     <h3 id="add-invoice-heading">Add New Invoice</h3>
 
+@if(flashMessages.has('error'))
+  <div style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-weight: 500;">
+    ⚠️ {{ flashMessages.get('error') }}
+  </div>
+@end
       <form method="POST" action="/clients/{{ client.id }}/invoices" aria-label="Create invoice form">
         {{ csrfField() }}
 
