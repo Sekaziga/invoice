@@ -36,12 +36,12 @@ export default class InvoicesController {
     invoice.merge(request.only(['amount', 'due_date', 'status']))
     await invoice.save()
 
-    return response.redirect(`/clients/${invoice.client_id}/invoices`)
+    return response.redirect(`/clients/${invoice.clientId}/invoices`)
   }
 
   public async destroy({ params, response }: HttpContext) {
     const invoice = await Invoice.findOrFail(params.id)
-    const clientId = invoice.client_id
+    const clientId = invoice.clientId
 
     await invoice.delete()
 
