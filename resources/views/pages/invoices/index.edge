@@ -292,9 +292,15 @@
       </td>
 
       <td>
-        <span class="status-badge status-{{ invoice.status }}">
-          {{ invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1) }}
-        </span>
+        @if(invoice.isOverdue)
+  <span class="status-badge status-overdue">
+    Overdue
+  </span>
+@else
+  <span class="status-badge status-{{ invoice.status }}">
+    {{ invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1) }}
+  </span>
+@end
       </td>
 
       <td>

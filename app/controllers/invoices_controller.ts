@@ -9,6 +9,10 @@ export default class InvoicesController {
     const client = await Client.findOrFail(params.client_id)
     await client.load('invoices')
 
+    for (const invoice of client.invoices) {
+      invoice.isOverdue = DateTime.now() > invoice.dueDate && invoice.status !== 'paid'
+    }
+
     return view.render('pages/invoices/index', {
       client,
       invoices: client.invoices,

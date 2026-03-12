@@ -4,6 +4,10 @@ import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Client from '#models/client'
 
 export default class Invoice extends BaseModel {
+  @column()
+  declare status: string
+
+  declare isOverdue: boolean
   @column({ isPrimary: true })
   declare id: number
 
