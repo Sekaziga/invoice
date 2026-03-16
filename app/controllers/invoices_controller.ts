@@ -88,4 +88,19 @@ export default class InvoicesController {
 
     return response.redirect(`/clients/${clientId}/invoices`)
   }
+  // GET /OVERDUE INVOICES
+  public async overdue({ params, view }: HttpContext) {
+    const client = await Client.findOrFail(params.client_id)
+
+    const overdueInvoices = await Invoice.query()
+      .where('client_id', params.client_id)
+      .where('status', '!=', 'paid')
+      .where('due_date', '<', DateTime.now().toSQL())
+      .orderBy('due_date', 'asc')
+
+    return view.render('pages/invoices/overdue', {
+      client,
+      invoices: overdueInvoices,
+    })
+  }
 }
