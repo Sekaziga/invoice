@@ -1,0 +1,69 @@
+<h1>Overdue Invoices</h1>
+
+<p><strong>Total overdue invoices:</strong> {{ invoices.length }}</p>
+
+<p>
+  <a href="/clients/{{ client.id }}/invoices">← Back to all invoices</a>
+</p>
+
+@if(invoices.length === 0)
+
+  <p style="color:green; font-weight:bold;">
+    🎉 No overdue invoices
+  </p>
+
+@else
+
+<table border="1" cellpadding="12" style="border-collapse: collapse; width: 100%; margin-top:20px;">
+  <thead style="background:#f4f4f4;">
+    <tr>
+      <th>Invoice #</th>
+      <th>Amount</th>
+      <th>Due Date</th>
+      <th>Days Overdue</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    @each(invoice in invoices)
+
+      <tr style="background:#fff5f5;">
+
+        <td>#{{ invoice.id }}</td>
+
+        <td>
+          ${{ invoice.amount }}
+        </td>
+
+        <td>
+          {{ invoice.dueDate.toFormat('dd LLL yyyy') }}
+        </td>
+
+        <td style="color:red; font-weight:bold;">
+          {{ Math.floor(invoice.dueDate.diffNow('days').days * -1) }} days
+        </td>
+
+        <td>
+          <span style="
+            background:#ff4d4f;
+            color:white;
+            padding:4px 10px;
+            border-radius:6px;
+            font-size:12px;
+            font-weight:bold;
+          ">
+            OVERDUE
+          </span>
+        </td>
+
+      </tr>
+
+    @endeach
+
+  </tbody>
+
+</table>
+
+@end
