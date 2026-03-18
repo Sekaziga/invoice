@@ -2,6 +2,7 @@ import { BaseCommand } from '@adonisjs/core/ace'
 import Invoice from '#models/invoice'
 import app from '@adonisjs/core/services/app'
 import { DateTime } from 'luxon'
+import InvoiceReminderNotification from '#mails/invoice_reminder_notification'
 
 export default class SendInvoiceReminders extends BaseCommand {
   public static commandName = 'invoices:reminders'
@@ -16,7 +17,8 @@ export default class SendInvoiceReminders extends BaseCommand {
       .orderBy('due_date', 'asc')
 
     for (const invoice of overdueInvoices) {
-      console.log(`Reminder sent to ${invoice.client.name} for invoice #${invoice.id}`)
+      await invoice.client.notify(new InvoiceReminderNotification(invoice))
+      console.log(`Reminder sent to ${invoice.client.email} for invoice #${invoice.id}`)
     }
 
     console.log(`Total reminders processed: ${overdueInvoices.length}`)
