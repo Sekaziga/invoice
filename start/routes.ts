@@ -23,6 +23,7 @@ router.on('/').render('pages/home')
 // router.delete('/clients/:id', '#controllers/clients_controller.destroy')
 // keep compatibility route for forms/posts that target /clients/:id/delete
 //router.post('/clients/:id/delete', '#controllers/clients_controller.destroy')
+router.get('/overdue', '#controllers/invoices_controller.overdueAll')
 router.get('clients/:client_id/invoices/overdue', '#controllers/invoices_controller.overdue')
 
 router.resource('clients', '#controllers/clients_controller')

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overdue Invoices</title>
+</head>
+<body>
+  @include('partials/navigation')
+
+  <div style="max-width: 1200px; margin: 1.5rem auto; padding: 0 1rem;">
+    <header style="margin-bottom: 1rem;">
+      <h1 style="font-size: 1.8rem; color: #111827;">Overdue Invoices (All clients)</h1>
+      <p style="color:#4b5563;">Showing overdue invoices for every client. Fix them quickly to stay on top of billing.</p>
+    </header>
+
+    @if(invoices.length === 0)
+      <div style="background:#d1fae5; padding: 16px; border-radius: 10px; border: 1px solid #10b981; color:#065f46;">
+        🎉 Great job, there are no overdue invoices at this time.
+      </div>
+    @else
+      <table style="width:100%; border-collapse:collapse; margin-top:1rem; border:1px solid #e5e7eb;">
+        <thead style="background:#f3f4f6; color:#4b5563; text-align:left;">
+          <tr>
+            <th style="padding:12px; border-bottom:1px solid #e5e7eb;">Invoice #</th>
+            <th style="padding:12px; border-bottom:1px solid #e5e7eb;">Client</th>
+            <th style="padding:12px; border-bottom:1px solid #e5e7eb;">Amount</th>
+            <th style="padding:12px; border-bottom:1px solid #e5e7eb;">Due Date</th>
+            <th style="padding:12px; border-bottom:1px solid #e5e7eb;">Days Late</th>
+            <th style="padding:12px; border-bottom:1px solid #e5e7eb;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(invoice in invoices)
+            <tr style="border-bottom:1px solid #e5e7eb;">
+              <td style="padding:12px;">#{{ invoice.id }}</td>
+              <td style="padding:12px;"><a href="/clients/{{ invoice.client.id }}" style="color:#4f46e5; text-decoration:none;">{{ invoice.client.name }}</a></td>
+              <td style="padding:12px;">${{ invoice.amount }}</td>
+              <td style="padding:12px;">{{ invoice.dueDate.toFormat('MMM dd, yyyy') }}</td>
+              <td style="padding:12px; color:#dc2626; font-weight:700;">{{ Math.floor(invoice.dueDate.diffNow('days').days * -1) }}</td>
+              <td style="padding:12px;"><a href="/clients/{{ invoice.client.id }}/invoices" style="color:#1d4ed8;">View client invoices</a></td>
+            </tr>
+          @endeach
+        </tbody>
+      </table>
+    @end
+  </div>
+</body>
+</html>
