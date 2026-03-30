@@ -42,10 +42,16 @@ function serializeClientDetail(client: Client): ClientDetail {
   }
 }
 
+async function findOwnedClientOrFail(clientId: number, userId: number) {
+  return Client.query().where('id', clientId).where('user_id', userId).firstOrFail()
+}
+
 export default class ClientsController {
   // Get all clients for logged-in user
-  public async index({ inertia }: HttpContext) {
-    const clients = await Client.all()
+  public async index({ auth, inertia }: HttpContext) {
+    const clients = await Client.query()
+      .where('user_id', auth.user!.id)
+      .orderBy('created_at', 'desc')
 
     return inertia.render('Clients/Index', {
       clients: clients.map(serializeClient),
@@ -57,22 +63,27 @@ export default class ClientsController {
   }
 
   // Create new client
-  public async store({ request, response }: HttpContext) {
+  public async store({ auth, request, response }: HttpContext) {
     const data = request.only(['name', 'email', 'phone', 'address'])
 
-    await Client.create(data)
+    await Client.create({
+      ...data,
+      userId: auth.user!.id,
+    })
 
     return response.redirect('/clients')
   }
-  public async invoices({ params }: HttpContext) {
-    const client = await Client.findOrFail(params.id)
+
+  public async invoices({ auth, params }: HttpContext) {
+    const client = await findOwnedClientOrFail(params.id, auth.user!.id)
 
     const invoices = await client.related('invoices').query()
 
     return invoices
   }
-  public async show({ params, inertia }: HttpContext) {
-    const client = await Client.findOrFail(params.id)
+
+  public async show({ auth, params, inertia }: HttpContext) {
+    const client = await findOwnedClientOrFail(params.id, auth.user!.id)
 
     await client.load('invoices')
 
@@ -81,16 +92,16 @@ export default class ClientsController {
     })
   }
 
-  public async edit({ params, inertia }: HttpContext) {
-    const client = await Client.findOrFail(params.id)
+  public async edit({ auth, params, inertia }: HttpContext) {
+    const client = await findOwnedClientOrFail(params.id, auth.user!.id)
 
     return inertia.render('Clients/Edit', {
       client: serializeClient(client),
     })
   }
 
-  public async update({ params, request, response }: HttpContext) {
-    const client = await Client.findOrFail(params.id)
+  public async update({ auth, params, request, response }: HttpContext) {
+    const client = await findOwnedClientOrFail(params.id, auth.user!.id)
 
     const data = request.only(['name', 'email', 'phone', 'address'])
 
@@ -100,8 +111,8 @@ export default class ClientsController {
     return response.redirect('/clients')
   }
 
-  public async destroy({ params, response }: HttpContext) {
-    const client = await Client.findOrFail(params.id)
+  public async destroy({ auth, params, response }: HttpContext) {
+    const client = await findOwnedClientOrFail(params.id, auth.user!.id)
 
     await client.delete()
 

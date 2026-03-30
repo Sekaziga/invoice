@@ -17,16 +17,19 @@ export default function Dashboard({
       label: 'Total invoices',
       value: totalInvoices,
       tone: 'from-sky-500 to-cyan-400',
+      note: 'Track every invoice created in your workspace.',
     },
     {
       label: 'Paid invoices',
       value: paidInvoices,
       tone: 'from-emerald-500 to-lime-400',
+      note: 'These invoices are fully settled and closed.',
     },
     {
       label: 'Overdue invoices',
       value: overdueInvoices,
       tone: 'from-rose-500 to-orange-400',
+      note: 'Use this count to focus your collection follow-up.',
     },
   ]
 
@@ -42,7 +45,8 @@ export default function Dashboard({
               Keep invoices, clients, and collections in one calm workspace.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-stone-600">
-              Monitor invoice volume, spot overdue balances quickly, and jump into client records without leaving the dashboard.
+              Monitor invoice volume, spot overdue balances quickly, and jump into client records
+              without leaving the dashboard.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -79,7 +83,8 @@ export default function Dashboard({
             </div>
 
             <p className="mt-8 text-sm leading-6 text-slate-300">
-              Use the sidebar to move between client records, billing views, and overdue collections without losing context.
+              Use the sidebar to move between client records, billing views, and overdue collections
+              without losing context.
             </p>
           </article>
         </section>
@@ -92,7 +97,9 @@ export default function Dashboard({
             >
               <div className={`mb-6 h-2 w-24 rounded-full bg-gradient-to-r ${card.tone}`} />
               <p className="text-sm text-stone-500">{card.label}</p>
-              <p className="mt-3 text-5xl font-semibold tracking-tight text-stone-950">{card.value}</p>
+              <p className="mt-3 text-5xl font-semibold tracking-tight text-stone-950">
+                {card.value}
+              </p>
               <p className="mt-3 text-sm text-stone-500">{card.note}</p>
             </article>
           ))}

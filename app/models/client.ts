@@ -10,8 +10,8 @@ export default class Client extends BaseModel {
   @column({ isPrimary: true })
   declare public id: number
 
-  // @column()
-  // public userId: number | null = null
+  @column()
+  declare public userId: number | null
 
   @hasMany(() => Invoice)
   declare public invoices: HasMany<typeof Invoice>
