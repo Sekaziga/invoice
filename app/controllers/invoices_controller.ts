@@ -58,10 +58,25 @@ function serializeOverdueInvoice(invoice: Invoice): OverdueInvoicePayload {
   }
 }
 
+async function findOwnedClientOrFail(clientId: number, userId: number) {
+  return Client.query().where('id', clientId).where('user_id', userId).firstOrFail()
+}
+
+async function findOwnedInvoiceOrFail(invoiceId: number, userId: number) {
+  return Invoice.query()
+    .where('id', invoiceId)
+    .whereHas('client', (query) => query.where('user_id', userId))
+    .preload('client')
+    .firstOrFail()
+}
+
 export default class InvoicesController {
   // GET /invoices (all clients)
-  public async all({ inertia }: HttpContext) {
-    const invoices = await Invoice.query().preload('client').orderBy('created_at', 'desc')
+  public async all({ auth, inertia }: HttpContext) {
+    const invoices = await Invoice.query()
+      .whereHas('client', (query) => query.where('user_id', auth.user!.id))
+      .preload('client')
+      .orderBy('created_at', 'desc')
 
     return inertia.render('Invoices/All', {
       invoices: invoices.map((invoice) => ({
@@ -72,8 +87,8 @@ export default class InvoicesController {
   }
 
   // GET /clients/:client_id/invoices
-  public async index({ params, inertia }: HttpContext) {
-    const client = await Client.findOrFail(params.client_id)
+  public async index({ auth, params, inertia }: HttpContext) {
+    const client = await findOwnedClientOrFail(params.client_id, auth.user!.id)
     await client.load('invoices')
 
     return inertia.render('Invoices/Index', {
@@ -83,8 +98,8 @@ export default class InvoicesController {
   }
 
   // GET /clients/:client_id/invoices/create
-  public async create({ params, inertia }: HttpContext) {
-    const client = await Client.findOrFail(params.client_id)
+  public async create({ auth, params, inertia }: HttpContext) {
+    const client = await findOwnedClientOrFail(params.client_id, auth.user!.id)
 
     return inertia.render('Invoices/Edit', {
       client: serializeClient(client),
@@ -93,8 +108,8 @@ export default class InvoicesController {
   }
 
   // POST /clients/:client_id/invoices
-  public async store({ params, request, response, session }: HttpContext) {
-    const client = await Client.findOrFail(params.client_id)
+  public async store({ auth, params, request, response, session }: HttpContext) {
+    const client = await findOwnedClientOrFail(params.client_id, auth.user!.id)
 
     const data = request.only(['amount', 'dueDate', 'status'])
 
@@ -126,9 +141,8 @@ export default class InvoicesController {
   }
 
   // GET /clients/:client_id/invoices/:id
-  public async show({ params, inertia }: HttpContext) {
-    const invoice = await Invoice.findOrFail(params.id)
-    await invoice.load('client')
+  public async show({ auth, params, inertia }: HttpContext) {
+    const invoice = await findOwnedInvoiceOrFail(params.id, auth.user!.id)
 
     return inertia.render('Invoices/Show', {
       client: serializeClient(invoice.client),
@@ -137,9 +151,8 @@ export default class InvoicesController {
   }
 
   // GET /clients/:client_id/invoices/:id/edit
-  public async edit({ params, inertia }: HttpContext) {
-    const invoice = await Invoice.findOrFail(params.id)
-    await invoice.load('client')
+  public async edit({ auth, params, inertia }: HttpContext) {
+    const invoice = await findOwnedInvoiceOrFail(params.id, auth.user!.id)
 
     return inertia.render('Invoices/Edit', {
       client: serializeClient(invoice.client),
@@ -148,8 +161,8 @@ export default class InvoicesController {
   }
 
   // PUT /clients/:client_id/invoices/:id
-  public async update({ params, request, response, session }: HttpContext) {
-    const invoice = await Invoice.findOrFail(params.id)
+  public async update({ auth, params, request, response, session }: HttpContext) {
+    const invoice = await findOwnedInvoiceOrFail(params.id, auth.user!.id)
 
     const data = request.only(['amount', 'dueDate', 'status'])
     const amount = Number.parseFloat(data.amount)
@@ -180,8 +193,8 @@ export default class InvoicesController {
   }
 
   // DELETE /clients/:client_id/invoices/:id
-  public async destroy({ params, response }: HttpContext) {
-    const invoice = await Invoice.findOrFail(params.id)
+  public async destroy({ auth, params, response }: HttpContext) {
+    const invoice = await findOwnedInvoiceOrFail(params.id, auth.user!.id)
     const clientId = invoice.clientId
 
     await invoice.delete()
@@ -190,8 +203,9 @@ export default class InvoicesController {
   }
 
   // GET /overdue (all clients)
-  public async overdueAll({ inertia }: HttpContext) {
+  public async overdueAll({ auth, inertia }: HttpContext) {
     const overdueInvoices = await Invoice.query()
+      .whereHas('client', (query) => query.where('user_id', auth.user!.id))
       .preload('client')
       .where('status', '!=', 'paid')
       .where('due_date', '<', DateTime.now().toSQL())
@@ -206,11 +220,11 @@ export default class InvoicesController {
   }
 
   // GET /clients/:client_id/invoices/overdue
-  public async overdue({ params, inertia }: HttpContext) {
-    const client = await Client.findOrFail(params.client_id)
+  public async overdue({ auth, params, inertia }: HttpContext) {
+    const client = await findOwnedClientOrFail(params.client_id, auth.user!.id)
 
     const overdueInvoices = await Invoice.query()
-      .where('client_id', params.client_id)
+      .where('client_id', client.id)
       .where('status', '!=', 'paid')
       .where('due_date', '<', DateTime.now().toSQL())
       .orderBy('due_date', 'asc')

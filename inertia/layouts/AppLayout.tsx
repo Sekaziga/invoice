@@ -13,6 +13,18 @@ type NavItem = {
   isActive: (pathname: string) => boolean
 }
 
+type AuthUser = {
+  id: number
+  fullName: string | null
+  email: string
+}
+
+type SharedPageProps = {
+  auth?: {
+    user?: AuthUser | null
+  }
+}
+
 function DashboardIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-5 w-5 shrink-0">
@@ -123,9 +135,18 @@ function LogoMark() {
 }
 
 export default function AppLayout({ title, children }: AppLayoutProps) {
-  const { url } = usePage()
-  const pathname = url.split('?')[0]
+  const page = usePage<SharedPageProps>()
+  const pathname = page.url.split('?')[0]
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const user = page.props.auth?.user ?? null
+  const userLabel = user?.fullName || user?.email || 'Workspace user'
+  const userDetail = user?.email || 'Signed in'
+  const userInitials = userLabel
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('')
 
   useEffect(() => {
     setMobileNavOpen(false)
@@ -161,7 +182,9 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
       isActive: (currentPath) =>
         currentPath === '/clients' ||
         currentPath === '/clients/create' ||
-        (currentPath.startsWith('/clients/') && !currentPath.includes('/invoices') && !currentPath.includes('/overdue')),
+        (currentPath.startsWith('/clients/') &&
+          !currentPath.includes('/invoices') &&
+          !currentPath.includes('/overdue')),
     },
     {
       label: 'Invoices',
@@ -308,13 +331,22 @@ export default function AppLayout({ title, children }: AppLayoutProps) {
 
             <div className="flex items-center gap-3">
               <div className="hidden text-right sm:block">
-                <p className="text-sm font-medium text-stone-950">Finance team</p>
-                <p className="text-xs text-stone-500">Active workspace</p>
+                <p className="text-sm font-medium text-stone-950">{userLabel}</p>
+                <p className="text-xs text-stone-500">{userDetail}</p>
               </div>
 
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-stone-950 text-sm font-semibold text-white shadow-sm">
-                IA
+                {userInitials || 'U'}
               </div>
+
+              <Link
+                href="/logout"
+                method="post"
+                as="button"
+                className="inline-flex items-center rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-stone-950 hover:text-stone-950"
+              >
+                Logout
+              </Link>
             </div>
           </div>
         </header>
