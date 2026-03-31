@@ -10,7 +10,7 @@ type ClientSummary = {
 type Invoice = {
   id: number
   clientId: number
-  amount: number
+  total: number
   dueDate: string | null
   status: string
   isOverdue: boolean
@@ -68,8 +68,8 @@ export default function AllInvoices({ invoices }: AllInvoicesProps) {
     const searchableValues = [
       `#${invoice.id}`,
       clientName,
-      String(invoice.amount),
-      formatCurrency(invoice.amount),
+      String(invoice.total),
+      formatCurrency(invoice.total),
       invoice.dueDate ? formatDate(invoice.dueDate) : 'No due date',
       invoice.status ?? '',
       invoice.isOverdue ? 'overdue' : 'current',
@@ -184,7 +184,7 @@ export default function AllInvoices({ invoices }: AllInvoicesProps) {
                             {clientName}
                           </Link>
                         </td>
-                        <td className="px-6 py-5 text-sm text-stone-700">{formatCurrency(invoice.amount)}</td>
+                        <td className="px-6 py-5 text-sm text-stone-700">{formatCurrency(invoice.total)}</td>
                         <td className="px-6 py-5 text-sm text-stone-700">{formatDate(invoice.dueDate)}</td>
                         <td className="px-6 py-5 text-sm">
                           <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusClasses(invoice)}`}>

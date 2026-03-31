@@ -11,7 +11,7 @@ type ClientListItem = {
 
 type ClientInvoiceItem = {
   id: number
-  amount: number
+  total: number
   dueDate: string | null
   status: string
 }
@@ -35,7 +35,10 @@ function serializeClientDetail(client: Client): ClientDetail {
     ...serializeClient(client),
     invoices: client.invoices.map((invoice) => ({
       id: invoice.id,
-      amount: invoice.amount,
+      total: (invoice.items ?? []).reduce(
+        (sum, item) => sum + Number(item.quantity) * Number(item.unitPrice),
+        0
+      ),
       dueDate: invoice.dueDate ? invoice.dueDate.toISODate() : null,
       status: invoice.status,
     })),
@@ -85,7 +88,7 @@ export default class ClientsController {
   public async show({ auth, params, inertia }: HttpContext) {
     const client = await findOwnedClientOrFail(params.id, auth.user!.id)
 
-    await client.load('invoices')
+    await client.load('invoices', (query) => query.preload('items'))
 
     return inertia.render('Clients/Show', {
       client: serializeClientDetail(client),

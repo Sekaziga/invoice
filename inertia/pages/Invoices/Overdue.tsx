@@ -9,7 +9,7 @@ type ClientSummary = {
 type OverdueInvoice = {
   id: number
   clientId: number
-  amount: number
+  total: number
   dueDate: string | null
   status: string
   isOverdue: boolean
@@ -103,7 +103,7 @@ export default function Overdue({ client, invoices }: OverdueProps) {
                     {invoices.map((invoice) => (
                       <tr key={invoice.id} className="transition hover:bg-rose-50/40">
                         <td className="px-6 py-5 text-sm font-semibold text-stone-950">#{invoice.id}</td>
-                        <td className="px-6 py-5 text-sm text-stone-700">{formatCurrency(invoice.amount)}</td>
+                        <td className="px-6 py-5 text-sm text-stone-700">{formatCurrency(invoice.total)}</td>
                         <td className="px-6 py-5 text-sm text-stone-700">{formatDate(invoice.dueDate)}</td>
                         <td className="px-6 py-5 text-sm font-semibold text-rose-700">{invoice.daysLate} days</td>
                         <td className="px-6 py-5">

@@ -38,5 +38,8 @@ router
 
     router.resource('clients', '#controllers/clients_controller')
     router.resource('clients.invoices', '#controllers/invoices_controller')
+    router
+      .resource('clients.invoices.items', '#controllers/invoice_items_controller')
+      .only(['store', 'update', 'destroy'])
   })
   .use(middleware.auth())
