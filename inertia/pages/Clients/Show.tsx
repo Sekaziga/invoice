@@ -3,7 +3,7 @@ import AppLayout from '../../layouts/AppLayout'
 
 type Invoice = {
   id: number
-  amount: number
+  total: number
   dueDate: string | null
   status: string
 }
@@ -166,7 +166,7 @@ export default function ClientShow({ client }: ClientShowProps) {
                     <thead className="bg-stone-50 text-left text-xs uppercase tracking-[0.25em] text-stone-500">
                       <tr>
                         <th className="px-4 py-3">Invoice</th>
-                        <th className="px-4 py-3">Amount</th>
+                        <th className="px-4 py-3">Total</th>
                         <th className="px-4 py-3">Due date</th>
                         <th className="px-4 py-3">Status</th>
                       </tr>
@@ -175,7 +175,7 @@ export default function ClientShow({ client }: ClientShowProps) {
                       {client.invoices.map((invoice) => (
                         <tr key={invoice.id} className="transition hover:bg-stone-50/80">
                           <td className="px-4 py-4 text-sm font-medium text-stone-950">#{invoice.id}</td>
-                          <td className="px-4 py-4 text-sm text-stone-700">{formatCurrency(invoice.amount)}</td>
+                          <td className="px-4 py-4 text-sm text-stone-700">{formatCurrency(invoice.total)}</td>
                           <td className="px-4 py-4 text-sm text-stone-700">{formatDate(invoice.dueDate)}</td>
                           <td className="px-4 py-4 text-sm">
                             <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusClasses(invoice.status)}`}>

@@ -1,21 +1,17 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import Client from '#models/client'
+import InvoiceItem from '#models/invoice_item'
 
 export default class Invoice extends BaseModel {
-  // @column()
-  // declare status: string
-
   declare isOverdue: boolean
+
   @column({ isPrimary: true })
   declare id: number
 
   @column()
   declare public clientId: number
-
-  @column()
-  declare amount: number
 
   @column.dateTime()
   declare dueDate: DateTime
@@ -31,4 +27,7 @@ export default class Invoice extends BaseModel {
 
   @belongsTo(() => Client)
   declare public client: BelongsTo<typeof Client>
+
+  @hasMany(() => InvoiceItem)
+  declare items: HasMany<typeof InvoiceItem>
 }

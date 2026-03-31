@@ -8,10 +8,18 @@ type ClientSummary = {
   name: string
 }
 
+type InvoiceItemPayload = {
+  id: number
+  description: string
+  quantity: number
+  unitPrice: number
+}
+
 type InvoicePayload = {
   id: number
   clientId: number
-  amount: number
+  total: number
+  items: InvoiceItemPayload[]
   dueDate: string | null
   status: string
   isOverdue: boolean
@@ -35,10 +43,20 @@ function serializeInvoice(invoice: Invoice): InvoicePayload {
   const now = DateTime.now()
   const isOverdue = now > invoice.dueDate && invoice.status !== 'paid'
 
+  const items: InvoiceItemPayload[] = (invoice.items ?? []).map((item) => ({
+    id: item.id,
+    description: item.description,
+    quantity: Number(item.quantity),
+    unitPrice: Number(item.unitPrice),
+  }))
+
+  const total = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
+
   return {
     id: invoice.id,
     clientId: invoice.clientId,
-    amount: invoice.amount,
+    total,
+    items,
     dueDate: invoice.dueDate ? invoice.dueDate.toISODate() : null,
     status: invoice.status,
     isOverdue,
@@ -67,6 +85,7 @@ async function findOwnedInvoiceOrFail(invoiceId: number, userId: number) {
     .where('id', invoiceId)
     .whereHas('client', (query) => query.where('user_id', userId))
     .preload('client')
+    .preload('items')
     .firstOrFail()
 }
 
@@ -76,6 +95,7 @@ export default class InvoicesController {
     const invoices = await Invoice.query()
       .whereHas('client', (query) => query.where('user_id', auth.user!.id))
       .preload('client')
+      .preload('items')
       .orderBy('created_at', 'desc')
 
     return inertia.render('Invoices/All', {
@@ -89,11 +109,15 @@ export default class InvoicesController {
   // GET /clients/:client_id/invoices
   public async index({ auth, params, inertia }: HttpContext) {
     const client = await findOwnedClientOrFail(params.client_id, auth.user!.id)
-    await client.load('invoices')
+
+    const invoices = await Invoice.query()
+      .where('client_id', client.id)
+      .preload('items')
+      .orderBy('created_at', 'desc')
 
     return inertia.render('Invoices/Index', {
       client: serializeClient(client),
-      invoices: client.invoices.map(serializeInvoice),
+      invoices: invoices.map(serializeInvoice),
     })
   }
 
@@ -108,36 +132,29 @@ export default class InvoicesController {
   }
 
   // POST /clients/:client_id/invoices
-  public async store({ auth, params, request, response, session }: HttpContext) {
+  public async store({ auth, params, request, response }: HttpContext) {
     const client = await findOwnedClientOrFail(params.client_id, auth.user!.id)
 
-    const data = request.only(['amount', 'dueDate', 'status'])
+    const data = request.only(['dueDate', 'status', 'items'])
 
-    // ✅ Validation
-    const amount = Number.parseFloat(data.amount)
-
-    if (Number.isNaN(amount)) {
-      session.flash('error', 'Amount must be a valid number')
-      return response.redirect().back()
-    }
-
-    if (amount <= 0) {
-      session.flash('error', 'Amount must be greater than 0')
-      return response.redirect().back()
-    }
-
-    if (amount > 9999999999.99) {
-      session.flash('error', 'Amount is too large. Maximum allowed is 9,999,999,999.99')
-      return response.redirect().back()
-    }
-
-    await client.related('invoices').create({
-      amount: amount,
+    const invoice = await client.related('invoices').create({
       status: data.status,
       dueDate: DateTime.fromISO(data.dueDate),
     })
 
-    return response.redirect(`/clients/${client.id}/invoices`)
+    const items = Array.isArray(data.items) ? data.items : []
+    for (const item of items) {
+      const quantity = Number.parseFloat(item.quantity)
+      const unitPrice = Number.parseFloat(item.unitPrice)
+      if (!item.description || Number.isNaN(quantity) || Number.isNaN(unitPrice)) continue
+      await invoice.related('items').create({
+        description: String(item.description).trim(),
+        quantity,
+        unitPrice,
+      })
+    }
+
+    return response.redirect(`/clients/${client.id}/invoices/${invoice.id}`)
   }
 
   // GET /clients/:client_id/invoices/:id
@@ -161,35 +178,32 @@ export default class InvoicesController {
   }
 
   // PUT /clients/:client_id/invoices/:id
-  public async update({ auth, params, request, response, session }: HttpContext) {
+  public async update({ auth, params, request, response }: HttpContext) {
     const invoice = await findOwnedInvoiceOrFail(params.id, auth.user!.id)
 
-    const data = request.only(['amount', 'dueDate', 'status'])
-    const amount = Number.parseFloat(data.amount)
-
-    if (Number.isNaN(amount)) {
-      session.flash('error', 'Amount must be a valid number')
-      return response.redirect().back()
-    }
-
-    if (amount <= 0) {
-      session.flash('error', 'Amount must be greater than 0')
-      return response.redirect().back()
-    }
-
-    if (amount > 9999999999.99) {
-      session.flash('error', 'Amount is too large. Maximum allowed is 9,999,999,999.99')
-      return response.redirect().back()
-    }
+    const data = request.only(['dueDate', 'status', 'items'])
 
     invoice.merge({
-      amount,
       status: data.status,
       dueDate: DateTime.fromISO(data.dueDate),
     })
     await invoice.save()
 
-    return response.redirect(`/clients/${invoice.clientId}/invoices`)
+    // Replace all items
+    await invoice.related('items').query().delete()
+    const items = Array.isArray(data.items) ? data.items : []
+    for (const item of items) {
+      const quantity = Number.parseFloat(item.quantity)
+      const unitPrice = Number.parseFloat(item.unitPrice)
+      if (!item.description || Number.isNaN(quantity) || Number.isNaN(unitPrice)) continue
+      await invoice.related('items').create({
+        description: String(item.description).trim(),
+        quantity,
+        unitPrice,
+      })
+    }
+
+    return response.redirect(`/clients/${invoice.clientId}/invoices/${invoice.id}`)
   }
 
   // DELETE /clients/:client_id/invoices/:id
@@ -207,6 +221,7 @@ export default class InvoicesController {
     const overdueInvoices = await Invoice.query()
       .whereHas('client', (query) => query.where('user_id', auth.user!.id))
       .preload('client')
+      .preload('items')
       .where('status', '!=', 'paid')
       .where('due_date', '<', DateTime.now().toSQL())
       .orderBy('due_date', 'asc')
@@ -225,6 +240,7 @@ export default class InvoicesController {
 
     const overdueInvoices = await Invoice.query()
       .where('client_id', client.id)
+      .preload('items')
       .where('status', '!=', 'paid')
       .where('due_date', '<', DateTime.now().toSQL())
       .orderBy('due_date', 'asc')

@@ -12,6 +12,7 @@ export default class SendInvoiceReminders extends BaseCommand {
     await app.boot()
     const overdueInvoices = await Invoice.query()
       .preload('client')
+      .preload('items')
       .where('status', '!=', 'paid')
       .where('due_date', '<', DateTime.now().toSQL())
       .orderBy('due_date', 'asc')
